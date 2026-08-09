@@ -95,6 +95,7 @@ jobs:
           ls "$TEMPLATE_DIR"
 
       - name: Import Resources (warm cache)
+        shell: bash
         run: |
           "$GODOT_BIN" --headless --import || true
 
