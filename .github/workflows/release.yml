@@ -48,14 +48,14 @@ jobs:
             ~/Library/Application Support/Godot/export_templates/4.7.stable
             ~/.local/share/godot/export_templates/4.7.stable
             %APPDATA%\Godot\export_templates\4.7.stable
-          key: godot-templates-4.7-stable
+          key: godot-templates-4.7-stable-${{ runner.os }}
           restore-keys: |
-            godot-templates-4.7-stable
+            godot-templates-4.7-stable-${{ runner.os }}
 
       - name: Install Godot 4.7
         shell: bash
         run: |
-          wget -q https://github.com/godotengine/godot-builds/releases/download/4.7-stable/Godot_v4.7-stable_${{ matrix.godot_platform }}.zip -O godot.zip
+          curl -sSL -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7-stable/Godot_v4.7-stable_${{ matrix.godot_platform }}.zip
           mkdir -p /tmp/godot-bin
           unzip -q godot.zip -d /tmp/godot-bin
           if [ "$RUNNER_OS" == "macOS" ]; then
@@ -83,7 +83,7 @@ jobs:
             TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/4.7.stable"
           fi
           mkdir -p "$TEMPLATE_DIR"
-          wget -q https://github.com/godotengine/godot-builds/releases/download/4.7-stable/Godot_v4.7-stable_export_templates.tpz -O templates.tpz
+          curl -sSL -o templates.tpz https://github.com/godotengine/godot-builds/releases/download/4.7-stable/Godot_v4.7-stable_export_templates.tpz
           unzip -q templates.tpz -d "$TEMPLATE_DIR"
           rm -f templates.tpz
           # 模板解压后是 templates/ 子目录, 需要平铺到 4.7.stable/ 下
