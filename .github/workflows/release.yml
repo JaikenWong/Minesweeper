@@ -1,0 +1,127 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build on ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux
+            os: ubuntu-latest
+            godot_platform: linux.x86_64
+            preset: "Linux/X11"
+            output_name: Minesweeper-Linux
+            output_ext: AppImage
+          - target: windows
+            os: windows-latest
+            godot_platform: win64.exe
+            preset: "Windows Desktop"
+            output_name: Minesweeper-Windows
+            output_ext: exe
+          - target: macos
+            os: macos-latest
+            godot_platform: macos.universal
+            preset: "macOS"
+            output_name: Minesweeper-macOS
+            output_ext: zip
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Godot Templates
+        id: cache-templates
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Application Support/Godot/export_templates/4.7.stable
+            ~/.local/share/godot/export_templates/4.7.stable
+            %APPDATA%\Godot\export_templates\4.7.stable
+          key: godot-templates-4.7-stable
+          restore-keys: |
+            godot-templates-4.7-stable
+
+      - name: Install Godot 4.7
+        run: |
+          wget -q https://github.com/godotengine/godot-builds/releases/download/4.7-stable/Godot_v4.7-stable_${{ matrix.godot_platform }}.zip -O godot.zip
+          mkdir -p /tmp/godot-bin
+          unzip -q godot.zip -d /tmp/godot-bin
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            mv /tmp/godot-bin/Godot_v4.7-stable_win64.exe /tmp/godot-bin/godot.exe
+            echo "C:\tmp\godot-bin" >> $GITHUB_PATH
+          else
+            mv /tmp/godot-bin/Godot_v4.7-stable_${{ matrix.godot_platform }} /tmp/godot-bin/godot
+            chmod +x /tmp/godot-bin/godot
+            echo "/tmp/godot-bin" >> $GITHUB_PATH
+          fi
+          rm godot.zip
+          godot --version
+
+      - name: Install Godot Export Templates
+        if: steps.cache-templates.outputs.cache-hit != 'true'
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            TEMPLATE_DIR="$HOME/Library/Application Support/Godot/export_templates/4.7.stable"
+          else
+            TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/4.7.stable"
+          fi
+          mkdir -p "$TEMPLATE_DIR"
+          wget -q https://github.com/godotengine/godot-builds/releases/download/4.7-stable/Godot_v4.7-stable_export_templates.tpz -O templates.tpz
+          unzip -q templates.tpz -d "$TEMPLATE_DIR"
+          rm -f templates.tpz
+          # 模板解压后是 templates/ 子目录, 需要平铺到 4.7.stable/ 下
+          if [ -d "$TEMPLATE_DIR/templates" ]; then
+            mv "$TEMPLATE_DIR/templates/"* "$TEMPLATE_DIR/"
+            rm -rf "$TEMPLATE_DIR/templates"
+          fi
+          ls "$TEMPLATE_DIR"
+
+      - name: Import Resources (warm cache)
+        run: godot --headless --import || true
+
+      - name: Build Release
+        run: |
+          mkdir -p build
+          godot --headless --path . --export-release "${{ matrix.preset }}" "build/${{ matrix.output_name }}.${{ matrix.output_ext }}"
+          ls -lh build/
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.output_name }}
+          path: build/${{ matrix.output_name }}.${{ matrix.output_ext }}
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List Artifacts
+        run: ls -la artifacts/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/Minesweeper-Linux/*
+            artifacts/Minesweeper-Windows/*
+            artifacts/Minesweeper-macOS/*
+          generate_release_notes: true
+          fail_on_unmatched_files: false

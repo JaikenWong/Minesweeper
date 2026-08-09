@@ -2,6 +2,8 @@
 
 经典扫雷游戏的 Godot 4 复刻。
 
+[![Release Build](https://github.com/JaikenWong/Minesweeper/actions/workflows/release.yml/badge.svg)](https://github.com/JaikenWong/Minesweeper/actions/workflows/release.yml)
+
 ## 运行
 
 1. 打开 [Godot 4.2+](https://godotengine.org/download) (用 **Godot 4.x**, 不是 Godot 3)
@@ -72,3 +74,24 @@ Minesweeper/
 
 - 没有"重置所有最佳成绩"按钮 (可手动删 `user://best_times.cfg`)
 - 自定义难度的最佳成绩只保留一份 (覆盖式)
+
+## 发布
+
+每次打 tag 自动出桌面三件包：
+
+```bash
+git tag v0.1.0
+git push --tags
+```
+
+会触发 `.github/workflows/release.yml`，并行构建：
+
+| 平台 | 产物 | GitHub Runner |
+|------|------|---------------|
+| Linux | `Minesweeper-Linux.AppImage` (单文件, 直接 chmod +x 运行) | ubuntu-latest |
+| Windows | `Minesweeper-Windows.exe` (单文件) | windows-latest |
+| macOS | `Minesweeper-macOS.zip` (内含 .app, 解压即可) | macos-latest |
+
+构建完成后自动创建 GitHub Release，附变更日志。可在 Actions 页面右上角 **Run workflow** 手动触发。
+
+> 本地手工出包：Godot 编辑器 → Project → Manage Export Presets (已预设) → Project → Export... → 选 preset。
