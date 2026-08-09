@@ -202,6 +202,13 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "🔄 重开 (R)"
 
+[node name="HelpButton" type="Button" parent="BottomBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "❓ 玩法"
+
 [node name="CustomDialog" type="AcceptDialog" parent="."]
 unique_name_in_owner = true
 title = "自定义难度"
@@ -256,3 +263,19 @@ max_value = 200.0
 step = 1.0
 value = 10.0
 allow_greater = false
+
+[node name="HelpDialog" type="AcceptDialog" parent="."]
+unique_name_in_owner = true
+title = "玩法说明"
+position = Vector2i(0, 0)
+size = Vector2i(380, 280)
+ok_button_text = "知道了"
+dialog_text = "🖱  左键      揭开格子 (0 自动展开空白)
+🚩  右键 / M  插旗 (空白→红旗→问号)
+⚡ 左右同时   数字格上: 连锁揭开周围剩余格
+💡  提示 (H)  智能找安全格, 黄色高亮, 每局 3 次
+🔄  重开 (R)  重新开始当前难度
+🏆  最佳成绩  按难度自动保存, 破纪录有动效
+🎚  自定义     行/列/雷数任意组合 (mines < rows×cols)
+
+首次点击永远不中雷。"

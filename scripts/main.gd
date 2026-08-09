@@ -19,6 +19,8 @@ var best_times: BestTimes = BestTimes.new()
 @onready var _hint_count_label: Label = %HintCountLabel
 @onready var _hint_button: Button = %HintButton
 @onready var _restart_button: Button = %RestartButton
+@onready var _help_button: Button = %HelpButton
+@onready var _help_dialog: AcceptDialog = %HelpDialog
 @onready var _board_container: Control = %BoardContainer
 @onready var _best_label: Label = %BestLabel
 @onready var _custom_button: Button = %CustomButton
@@ -65,6 +67,7 @@ func _ready() -> void:
 	# 底部按钮
 	_hint_button.pressed.connect(_on_hint_pressed)
 	_restart_button.pressed.connect(_on_restart_pressed)
+	_help_button.pressed.connect(_on_help_pressed)
 	# 自定义难度
 	_custom_button.pressed.connect(_on_custom_pressed)
 	_custom_dialog.confirmed.connect(_on_custom_start)
@@ -286,6 +289,10 @@ func _on_hint_pressed() -> void:
 
 func _on_restart_pressed() -> void:
 	_restart_current()
+
+
+func _on_help_pressed() -> void:
+	_help_dialog.popup_centered()
 
 
 func _restart_current() -> void:

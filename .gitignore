@@ -29,3 +29,6 @@ obj/
 *.csproj
 *.sln
 *.user
+
+# WorkBuddy 工具记忆 (非项目内容)
+.workbuddy/
