@@ -63,17 +63,22 @@ func new_game(p_rows: int, p_cols: int, p_mines: int) -> void:
 
 
 ## 首次点击时调用: 在避开 (safe_row, safe_col) 周围 3x3 的区域随机放雷
+##
+## 规则 (详见 README "雷的分布规则" 章节):
+##  1. 首次点击才生成雷 (保证首次点击 + 周围 8 格都安全)
+##  2. 候选池 = 棋盘所有格 − 3×3 安全区
+##  3. Array.shuffle() 洗牌 → 取前 mine_count 个标 is_mine
+##  4. 紧接计算所有非雷格的 adjacent_mines (8 邻居雷数)
 func _place_mines(safe_row: int, safe_col: int) -> void:
-	# 收集所有候选位置
+	# 收集所有候选位置 (排除 3×3 安全区)
 	var candidates: Array[Vector2i] = []
 	for r in rows:
 		for c in cols:
 			if abs(r - safe_row) <= 1 and abs(c - safe_col) <= 1:
-				continue
+				continue  # 跳过安全区
 			candidates.append(Vector2i(r, c))
-	# 洗牌
+	# 洗牌 + 取前 mine_count 个标雷
 	candidates.shuffle()
-	# 取前 mine_count 个
 	var placed := 0
 	for pos in candidates:
 		if placed >= mine_count:
@@ -81,7 +86,7 @@ func _place_mines(safe_row: int, safe_col: int) -> void:
 		var cell: Cell = _cells[pos.x][pos.y]
 		cell.is_mine = true
 		placed += 1
-	# 计算每个非雷格的 adjacent_mines
+	# 计算每个非雷格的 adjacent_mines (用于揭开时显示数字)
 	for r in rows:
 		for c in cols:
 			var cell: Cell = _cells[r][c]
