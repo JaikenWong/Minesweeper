@@ -75,6 +75,7 @@ jobs:
           rm godot.zip
 
       - name: Install Godot Export Templates
+        shell: bash
         if: steps.cache-templates.outputs.cache-hit != 'true'
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
