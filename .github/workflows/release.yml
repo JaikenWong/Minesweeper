@@ -80,6 +80,8 @@ jobs:
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
             TEMPLATE_DIR="$HOME/Library/Application Support/Godot/export_templates/4.7.stable"
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            TEMPLATE_DIR="$APPDATA/Godot/export_templates/4.7.stable"
           else
             TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/4.7.stable"
           fi
