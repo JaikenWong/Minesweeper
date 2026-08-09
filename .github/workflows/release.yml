@@ -57,16 +57,21 @@ jobs:
           wget -q https://github.com/godotengine/godot-builds/releases/download/4.7-stable/Godot_v4.7-stable_${{ matrix.godot_platform }}.zip -O godot.zip
           mkdir -p /tmp/godot-bin
           unzip -q godot.zip -d /tmp/godot-bin
-          if [ "$RUNNER_OS" == "Windows" ]; then
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            chmod +x /tmp/godot-bin/Godot.app/Contents/MacOS/Godot
+            /tmp/godot-bin/Godot.app/Contents/MacOS/Godot --version
+            echo "GODOT_BIN=/tmp/godot-bin/Godot.app/Contents/MacOS/Godot" >> $GITHUB_ENV
+          elif [ "$RUNNER_OS" == "Windows" ]; then
             mv /tmp/godot-bin/Godot_v4.7-stable_win64.exe /tmp/godot-bin/godot.exe
-            echo "C:\tmp\godot-bin" >> $GITHUB_PATH
+            /tmp/godot-bin/godot.exe --version
+            echo "GODOT_BIN=/tmp/godot-bin/godot.exe" >> $GITHUB_ENV
           else
-            mv /tmp/godot-bin/Godot_v4.7-stable_${{ matrix.godot_platform }} /tmp/godot-bin/godot
+            mv /tmp/godot-bin/Godot_v4.7-stable_linux.x86_64 /tmp/godot-bin/godot
             chmod +x /tmp/godot-bin/godot
-            echo "/tmp/godot-bin" >> $GITHUB_PATH
+            /tmp/godot-bin/godot --version
+            echo "GODOT_BIN=/tmp/godot-bin/godot" >> $GITHUB_ENV
           fi
           rm godot.zip
-          godot --version
 
       - name: Install Godot Export Templates
         if: steps.cache-templates.outputs.cache-hit != 'true'
@@ -88,12 +93,14 @@ jobs:
           ls "$TEMPLATE_DIR"
 
       - name: Import Resources (warm cache)
-        run: godot --headless --import || true
+        run: |
+          "$GODOT_BIN" --headless --import || true
 
       - name: Build Release
+        shell: bash
         run: |
           mkdir -p build
-          godot --headless --path . --export-release "${{ matrix.preset }}" "build/${{ matrix.output_name }}.${{ matrix.output_ext }}"
+          "$GODOT_BIN" --headless --path . --export-release "${{ matrix.preset }}" "build/${{ matrix.output_name }}.${{ matrix.output_ext }}"
           ls -lh build/
 
       - name: Upload Artifact
