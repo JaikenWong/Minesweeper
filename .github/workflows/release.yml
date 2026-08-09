@@ -53,6 +53,7 @@ jobs:
             godot-templates-4.7-stable
 
       - name: Install Godot 4.7
+        shell: bash
         run: |
           wget -q https://github.com/godotengine/godot-builds/releases/download/4.7-stable/Godot_v4.7-stable_${{ matrix.godot_platform }}.zip -O godot.zip
           mkdir -p /tmp/godot-bin
